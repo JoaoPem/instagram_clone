@@ -1,0 +1,68 @@
+<div id="<%= dom_id post %>">
+
+  <div class="card" style="width: 25rem;">
+    <div class="card-header bg-white">
+      <div class="d-flex justify-content-between">
+
+        <div>
+          <% if post.user.profile_picture.attached?%>
+            <%= image_tag post.user.profile_picture, class: "img-thumbnail rounded-circle", style: "width: 10%"%>
+          <%else%>
+            <%= image_tag 'user-pp.png', class: "img-thumbnail rounded-circle", style: "width: 10%"%>
+          <%end%>
+          <span class="fw-bold mx-2"> <%= post.user.username %> </span>
+        </div>
+
+        <div>
+          <div class="dropdown">
+            <a class="text-dark fs-4" style="text-decoration:none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              ...
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Edit</a></li>
+              <li><a class="dropdown-item" href="#">Delete</a></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card-body">
+      <div id="post<%= post.id %>_images" class="carousel slide" data-bs-ride="true">
+        <div class="carousel-inner">
+          <% post.images.each_with_index do |img, i| %>
+            <div class="carousel-item <%= i==0 ?  'active' : '' %>" style="height: 25rem">
+             <%= image_tag img, class: "d-block w-100", style: "max-height: 100%; object-fit: cover;" %>
+            </div>
+          <% end %>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#post<%= post.id %>_images" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon bg-dark rounded-circle " aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#post<%= post.id %>_images" data-bs-slide="next">
+          <span class="carousel-control-next-icon bg-dark rounded-circle " aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        <div class="carousel-indicators" style="position:static">
+          <% post.images.each_with_index do |img, i| %>
+            <button type="button" data-bs-target="#post<%= post.id %>_images" data-bs-slide-to="<%= i %>" class=" bg-dark <%= i==0 ?  'active' : '' %>" <%= i==0 ? 'aria-current="true"' : '' %> aria-label="Slide <%= i+1 %>"></button>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <p class="card-text"><span class="fw-bold"><%= post.user.username %></span> <%= post.caption %> </p>
+    <small class="text-muted"> <%= time_ago_in_words(post.created_at) %> </small>
+
+    <div class="card-footer d-flex justify-content-between bg-white">
+      <input type="text" class="w-75" placeholder="Add a comment..." style="border:none">
+      <a class="text-primary" style="text-decoration:none">Post</a>
+    </div>
+
+  </div>
+
+</div>
