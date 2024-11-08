@@ -75,6 +75,7 @@ GEM
     ast (2.4.2)
     autoprefixer-rails (10.4.19.0)
       execjs (~> 2)
+    awesome_print (1.9.2)
     base64 (0.2.0)
     bcrypt (3.1.20)
     benchmark (0.3.0)
@@ -106,6 +107,8 @@ GEM
     erubi (1.13.0)
     execjs (2.10.0)
     ffi (1.17.0)
+    font-awesome-sass (6.5.2)
+      sassc (~> 2.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     i18n (1.14.6)
@@ -282,12 +285,14 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  awesome_print
   bootsnap
   bootstrap (~> 5.3.3)
   brakeman
   debug
   devise
   error_highlight (>= 0.4.0)
+  font-awesome-sass
   importmap-rails
   jbuilder
   puma (>= 5.0)

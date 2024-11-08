@@ -18,7 +18,9 @@
   </head>
 
   <body>
-    <%= render "layouts/navbar"%>
+    <% if current_user %>
+      <%= render "layouts/navbar"%>
+    <% end %>
     <%= yield %>
   </body>
 </html>
