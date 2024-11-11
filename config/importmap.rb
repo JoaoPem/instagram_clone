@@ -10,3 +10,4 @@ pin "@popperjs/core", to: "https://unpkg.com/@popperjs/core@2.11.6/dist/esm/inde
 pin "filepond" # @4.32.1
 pin_all_from "app/javascript/custom", under: "custom"
 pin "filepond-plugin-image-preview" # @4.6.12
+pin "filepond-plugin-file-validate-type" # @1.2.9
