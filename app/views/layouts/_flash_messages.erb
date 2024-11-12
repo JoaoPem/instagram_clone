@@ -1,19 +1,28 @@
-<% if notice && notice.is_a?(Array) %>
-
-  <% notice.each do |n|%>
-    <p class=" alert alert-success"> <%= n %> </p>
+<div id="flash-messages">
+  <% if notice && notice.is_a?(Array) %>
+    <% notice.each do |n| %>
+      <p class="alert alert-success"> <%= n %> </p>
+    <% end %>
+  <% elsif notice && notice.is_a?(String) %>
+    <p class="alert alert-success"> <%= notice %> </p>
   <% end %>
 
-<% elsif notice && notice.is_a?(String)%>
-  <p class=" alert alert-success"> <%= notice %> </p>
-<% end %>
-
-<% if alert && alert.is_a?(Array) %>
-
-  <% alert.each do |a|%>
-    <p class="alert alert-danger"> <%= a %> </p>
+  <% if alert && alert.is_a?(Array) %>
+    <% alert.each do |a| %>
+      <p class="alert alert-danger"> <%= a %> </p>
+    <% end %>
+  <% elsif alert && alert.is_a?(String) %>
+    <p class="alert alert-danger"> <%= alert %> </p>
   <% end %>
+</div>
 
-<% elsif alert && alert.is_a?(String)%>
-  <p class=" alert alert-success"> <%= alert %> </p>
-<% end %>
+<script>
+  setTimeout(function() {
+    const flashMessages = document.getElementById('flash-messages');
+    if (flashMessages) {
+      flashMessages.style.transition = 'opacity 1s';
+      flashMessages.style.opacity = '0';
+      setTimeout(() => flashMessages.remove(), 1000);
+    }
+  }, 5000);
+</script>
