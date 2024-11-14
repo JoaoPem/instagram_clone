@@ -3,7 +3,9 @@
   <div class="d-flex justify-content-between">
 
     <div class="d-flex">
-      <%= image_tag comment.user.profile_picture.attached? ? comment.user.profile_picture : 'user-pp.png', class: "img-thumbnail rounded-circle", style: "width: 2.5rem; max-height:2.5rem" %>
+      <%= link_to comment.user, class: "a-decoration-none", data: { turbo: false } do %>
+        <%= image_tag comment.user.profile_picture.attached? ? comment.user.profile_picture : 'user-pp.png', class: "img-thumbnail rounded-circle", style: "width: 2.5rem; max-height:2.5rem" %>
+      <% end %>
       <div class="d-flex flex-column mx-3 justify-content-center">
         <small class="fw-bold" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;max-width:10rem"><%= link_to comment.user, class:  "a-decoration-none", data: { turbo: false } do %><%= comment.user.username %><% end %></small>
         <small><%= comment.body %></small>

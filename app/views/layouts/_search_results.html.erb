@@ -3,16 +3,18 @@
     <li class="mt-3">
       <div class="d-flex justify-content-between">
 
-        <div class="d-flex">
-          <%= image_tag u.profile_picture.attached? ? u.profile_picture : 'user-pp.png', class: "img-thumbnail rounded-circle", style: "width: 2.5rem" %>
-          <div class="d-flex flex-column mx-3 justify-content-center">
-            <small class="fw-bold" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width:10rem">
-              <%= link_to u, class:"a-decoration-none", data: { turbo: false } do %> 
-                <%= u.username %> 
-              <%end%>
-            </small>
+        <%= link_to u, class:"a-decoration-none", data: { turbo: false } do %> 
+          <div class="d-flex">
+            <%= image_tag u.profile_picture.attached? ? u.profile_picture : 'user-pp.png', class: "img-thumbnail rounded-circle", style: "width: 2.5rem" %>
+            <div class="d-flex flex-column mx-3 justify-content-center">
+              <small class="fw-bold" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width:10rem">
+                
+                  <%= u.username %> 
+                
+              </small>
+            </div>
           </div>
-        </div>
+        <%end%>
 
       </div>
     </li>
