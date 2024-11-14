@@ -16,4 +16,10 @@ Rails.application.routes.draw do
   delete "cancel_request", to: "follows#cancel_request", as: :cancel_request
   post "accept_follow", to: "follows#accept_follow", as: :accept_follow
   delete "decline_follow", to: "follows#decline_follow", as: :decline_follow
+
+  resources :home do
+    collection do
+      get :graph_data
+    end
+  end
 end
