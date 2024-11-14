@@ -34,4 +34,18 @@ class User < ApplicationRecord
   def cancel_request(user)
     self.waiting_sent_requests.find_by(followed: user)&.destroy
   end
+
+  def self.adjacency_matrix
+    users = User.all
+    matrix = Array.new(users.size) { Array.new(users.size, 0) }
+
+    users.each_with_index do |user, i|
+      user.followings.each do |following|
+        j = users.index(following)
+        matrix[i][j] = 1 if j
+      end
+    end
+
+    matrix
+  end
 end
