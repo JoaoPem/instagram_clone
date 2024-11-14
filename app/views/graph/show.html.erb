@@ -1,5 +1,3 @@
-<%= render "layouts/flash_messages" %>
-
 <!-- Container centralizado -->
 <div class="d-flex justify-content-center align-items-center" style="height: 100vh; margin-top: 0;">
   <!-- Div do grafo -->
@@ -45,8 +43,8 @@
           .data(data.links)
           .enter()
           .append("line")
-          .attr("stroke", d => d.bidirectional ? "green" : "blue") // Verde para bidirecionais, azul para unidirecionais
-          .attr("stroke-width", 1.5);
+          .attr("stroke", d => d.bidirectional ? "green" : "red") // Verde para bidirecionais, azul para unidirecionais
+          .attr("stroke-width", 3);
 
         // Desenhando nós
         const node = svg.append("g")
@@ -56,7 +54,7 @@
           .data(data.nodes)
           .enter()
           .append("circle")
-          .attr("r", 10)
+          .attr("r", 15)
           .attr("fill", "#69b3a2")
           .call(d3.drag()
             .on("start", (event, d) => {
