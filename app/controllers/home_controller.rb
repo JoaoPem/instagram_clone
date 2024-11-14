@@ -1,8 +1,11 @@
 class HomeController < ApplicationController
   before_action :set_suggestions
+  before_action :set_feeds
 
   def index
   end
+
+  private
 
   def set_suggestions
     @suggestions = suggest_followers(current_user)
@@ -38,6 +41,10 @@ class HomeController < ApplicationController
 
     # Retorna até 5 sugestões
     suggestions.sample(5)
+  end
+
+  def set_feeds
+    @feeds = Post.where(user: [ current_user, current_user.followings ].flatten).order(created_at: :desc)
   end
 
 
