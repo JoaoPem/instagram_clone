@@ -1,5 +1,12 @@
-<!-- Div para o grafo -->
-<div id="graph" style="width: 100%; height: 500px; margin-top: 2rem;"></div>
+<%= render "layouts/flash_messages" %>
+
+<!-- Container centralizado -->
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh; margin-top: 0;">
+  <!-- Div do grafo -->
+  <div id="graph" style="width: 80%; height: 80%; position: relative;">
+    <!-- O svg será inserido aqui -->
+  </div>
+</div>
 
 <!-- Adicionando a biblioteca D3 -->
 <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -7,16 +14,23 @@
 <!-- Script para renderizar o grafo -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    fetch("/home/graph_data")
+    fetch("/graph_data")
       .then((response) => response.json())
       .then((data) => {
-        const width = 800;
-        const height = 500;
+        // Seleciona a div#graph
+        const graphContainer = document.getElementById('graph');
+        
+        // Calculando a largura e altura da div para usar no svg
+        const width = graphContainer.clientWidth;
+        const height = graphContainer.clientHeight;
 
-        const svg = d3.select("#graph")
+        // Cria o SVG dentro da div#graph com o tamanho adequado
+        const svg = d3.select(graphContainer)
           .append("svg")
           .attr("width", width)
-          .attr("height", height);
+          .attr("height", height)
+          .attr("viewBox", `0 0 ${width} ${height}`)
+          .attr("preserveAspectRatio", "xMinYMin meet");
 
         // Configurações de simulação de força
         const simulation = d3.forceSimulation(data.nodes)

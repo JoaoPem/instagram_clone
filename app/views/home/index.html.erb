@@ -1,95 +1,12 @@
-<%= render "layouts/flash_messages" %>
+<%= render "layouts/flash_messages"%>
 <div class="d-flex my-5 justify-content-center gap-5">
   <div class="d-flex flex-column gap-3">
     <%= render 'story/stories_list' %>
     <div class="flex flex-column">
-      <% @feeds.each do |p| %>
+      <% @feeds.each do |p|%>
         <%= render 'posts/post', post: p %>
-      <% end %>
+      <%end%>
     </div>
   </div>
   <%= render 'suggestions/suggestions_list', suggestions: @suggestions %>
 </div>
-
-<!-- Div para o grafo -->
-<div id="graph" style="width: 100%; height: 500px; margin-top: 2rem;"></div>
-
-<!-- Adicionando a biblioteca D3 -->
-<script src="https://d3js.org/d3.v6.min.js"></script>
-
-<!-- Script para renderizar o grafo -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    fetch("/home/graph_data")
-      .then((response) => response.json())
-      .then((data) => {
-        const width = 800;
-        const height = 500;
-
-        const svg = d3.select("#graph")
-          .append("svg")
-          .attr("width", width)
-          .attr("height", height);
-
-        // Configurações de simulação de força
-        const simulation = d3.forceSimulation(data.nodes)
-          .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
-          .force("charge", d3.forceManyBody().strength(-200))
-          .force("center", d3.forceCenter(width / 2, height / 2));
-
-        // Desenhando links e aplicando cor com base na bidirecionalidade
-        const link = svg.append("g")
-          .attr("stroke-opacity", 0.6)
-          .selectAll("line")
-          .data(data.links)
-          .enter()
-          .append("line")
-          .attr("stroke", d => d.bidirectional ? "green" : "blue") // Verde para bidirecionais, azul para unidirecionais
-          .attr("stroke-width", 1.5);
-
-        // Desenhando nós
-        const node = svg.append("g")
-          .attr("stroke", "#fff")
-          .attr("stroke-width", 1.5)
-          .selectAll("circle")
-          .data(data.nodes)
-          .enter()
-          .append("circle")
-          .attr("r", 10)
-          .attr("fill", "#69b3a2")
-          .call(d3.drag()
-            .on("start", (event, d) => {
-              if (!event.active) simulation.alphaTarget(0.3).restart();
-              d.fx = d.x;
-              d.fy = d.y;
-            })
-            .on("drag", (event, d) => {
-              d.fx = event.x;
-              d.fy = event.y;
-            })
-            .on("end", (event, d) => {
-              if (!event.active) simulation.alphaTarget(0);
-              d.fx = null;
-              d.fy = null;
-            })
-          );
-
-        // Exibindo o nome do usuário ao passar o mouse sobre o nó
-        node.append("title").text(d => d.name);
-
-        // Função de tick para atualizar a posição dos elementos em cada frame
-        simulation.on("tick", () => {
-          link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-
-          node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-        });
-      })
-      .catch(error => console.error("Erro ao carregar os dados do grafo:", error));
-  });
-</script>

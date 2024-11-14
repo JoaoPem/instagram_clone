@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "graph/show"
   resources :posts
 
   devise_for :users
@@ -22,4 +23,7 @@ Rails.application.routes.draw do
       get :graph_data
     end
   end
+
+  get "graph", to: "graph#show"
+  get "graph_data", to: "graph#graph_data"
 end
