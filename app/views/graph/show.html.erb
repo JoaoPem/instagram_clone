@@ -15,14 +15,11 @@
     fetch("/graph_data")
       .then((response) => response.json())
       .then((data) => {
-        // Seleciona a div#graph
         const graphContainer = document.getElementById('graph');
-        
-        // Calculando a largura e altura da div para usar no svg
         const width = graphContainer.clientWidth;
         const height = graphContainer.clientHeight;
 
-        // Cria o SVG dentro da div#graph com o tamanho adequado
+        // Cria o SVG
         const svg = d3.select(graphContainer)
           .append("svg")
           .attr("width", width)
@@ -30,32 +27,47 @@
           .attr("viewBox", `0 0 ${width} ${height}`)
           .attr("preserveAspectRatio", "xMinYMin meet");
 
-        // Configurações de simulação de força
+        // Definindo uma marker para as setas
+        svg.append("defs").selectAll("marker")
+          .data(["end", "bidirectional"])
+          .enter()
+          .append("marker")
+          .attr("id", d => d)
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 15)
+          .attr("refY", 0)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("orient", "auto")
+          .append("path")
+          .attr("d", "M0,-5L10,0L0,5")
+          .attr("fill", d => (d === "bidirectional" ? "green" : "red"));
+
+        // Configuração da simulação de força
         const simulation = d3.forceSimulation(data.nodes)
           .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
           .force("charge", d3.forceManyBody().strength(-200))
           .force("center", d3.forceCenter(width / 2, height / 2));
 
-        // Desenhando links e aplicando cor com base na bidirecionalidade
+        // Criando as arestas como linhas direcionais
         const link = svg.append("g")
           .attr("stroke-opacity", 0.6)
           .selectAll("line")
           .data(data.links)
           .enter()
           .append("line")
-          .attr("stroke", d => d.bidirectional ? "green" : "red") // Verde para bidirecionais, azul para unidirecionais
-          .attr("stroke-width", 3);
+          .attr("stroke", d => (d.bidirectional ? "green" : "red"))
+          .attr("stroke-width", 3)
+          .attr("marker-end", d => d.bidirectional ? "url(#bidirectional)" : "url(#end)");
 
-        // Desenhando nós
+        // Criando os nós
         const node = svg.append("g")
           .attr("stroke", "#fff")
           .attr("stroke-width", 1.5)
-          .selectAll("circle")
+          .selectAll("g")
           .data(data.nodes)
           .enter()
-          .append("circle")
-          .attr("r", 15)
-          .attr("fill", "#69b3a2")
+          .append("g")
           .call(d3.drag()
             .on("start", (event, d) => {
               if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -73,10 +85,15 @@
             })
           );
 
-        // Exibindo o nome do usuário ao passar o mouse sobre o nó
+        // Adiciona círculos nos nós
+        node.append("circle")
+          .attr("r", 15)
+          .attr("fill", "#69b3a2");
+
+        // Exibindo tooltip com o nome do nó
         node.append("title").text(d => d.name);
 
-        // Função de tick para atualizar a posição dos elementos em cada frame
+        // Atualizando posições na simulação
         simulation.on("tick", () => {
           link
             .attr("x1", d => d.source.x)
@@ -84,9 +101,7 @@
             .attr("x2", d => d.target.x)
             .attr("y2", d => d.target.y);
 
-          node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
+          node.attr("transform", d => `translate(${d.x},${d.y})`);
         });
       })
       .catch(error => console.error("Erro ao carregar os dados do grafo:", error));
