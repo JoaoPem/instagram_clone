@@ -7,7 +7,11 @@ class GraphController < ApplicationController
 
     # Define os nós (usuários)
     nodes = users.map do |user|
-      { id: user.id, name: user.full_name }
+      {
+        id: user.id,
+        name: user.full_name,
+        isCurrentUser: user == current_user # Identifica o current_user
+      }
     end
 
     # Define as arestas (conexões)

@@ -99,7 +99,7 @@
         // Adiciona círculos nos nós
         node.append("circle")
           .attr("r", 15)
-          .attr("fill", "#69b3a2");
+          .attr("fill", d => (d.isCurrentUser ? "yellow" : "#69b3a2")); // Vértice amarelo para current user
 
         // Exibindo tooltip com o nome do nó
         node.append("title").text(d => d.name);
