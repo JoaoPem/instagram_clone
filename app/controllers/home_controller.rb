@@ -23,13 +23,13 @@ class HomeController < ApplicationController
     user_index = users.index(user)
     return [] unless user_index # Retorna vazio se o usuário não estiver na lista
 
-    # Obtemos os usuários que o usuário atual já segue (conexões de primeiro grau)
+    # Conexões de primeiro grau
     first_degree_connections = []
     matrix[user_index].each_with_index do |connection, index|
       first_degree_connections << users[index] if connection == 1
     end
 
-    # Conexões de segundo grau: quem os seguidores de primeiro grau estão seguindo
+    # Conexões de segundo grau
     second_degree_connections = []
     first_degree_connections.each do |first_degree_user|
       first_degree_index = users.index(first_degree_user)
@@ -38,12 +38,25 @@ class HomeController < ApplicationController
       end
     end
 
-    # Remove duplicados e exclui o próprio usuário e as conexões de primeiro grau
-    suggestions = (second_degree_connections - first_degree_connections - [ user ]).uniq
+    # Conexões de terceiro grau
+    third_degree_connections = []
+    second_degree_connections.each do |second_degree_user|
+      second_degree_index = users.index(second_degree_user)
+      matrix[second_degree_index].each_with_index do |connection, index|
+        third_degree_connections << users[index] if connection == 1
+      end
+    end
+
+    # Filtragem:
+    # Remove duplicados, o próprio usuário, e conexões de primeiro grau
+    # Mantém conexões de segundo e terceiro grau
+    suggestions = (second_degree_connections + third_degree_connections)
+                  .uniq - first_degree_connections - [ user ]
 
     # Retorna até 5 sugestões
     suggestions.sample(5)
   end
+
 
   def set_feeds
     @feeds = Post.where(user: [ current_user, current_user.followings ].flatten).order(created_at: :desc)
