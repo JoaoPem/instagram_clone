@@ -14,18 +14,26 @@ class GraphController < ApplicationController
       }
     end
 
-    # Define as arestas (conexões)
-    links = Follow.where(accepted: true).map do |follow|
-      # Calcula os seguidores em comum (peso da aresta)
-      source_user = follow.follower
-      target_user = follow.followed
-      common_followers_count = (source_user.followers & target_user.followers).size
+    # Calcula as arestas com base nos posts curtidos em comum
+    links = []
+    user_likes = {}
 
-      {
-        source: source_user.id,
-        target: target_user.id,
-        bidirectional: target_user.followings.include?(source_user),
-        weight: common_followers_count
+    # Mapeia os posts curtidos por cada usuário
+    users.each do |user|
+      user_likes[user.id] = user.liked_posts.pluck(:id) # Obtém IDs dos posts curtidos
+    end
+
+    # Compara todos os pares de usuários para encontrar posts em comum
+    users.to_a.combination(2).each do |user_x, user_y|
+      common_posts = user_likes[user_x.id] & user_likes[user_y.id] # Interseção dos posts curtidos
+
+      next if common_posts.empty? # Ignora se não há posts em comum
+
+      # Adiciona uma aresta com o peso correspondente ao número de posts curtidos em comum
+      links << {
+        source: user_x.id,
+        target: user_y.id,
+        weight: common_posts.size # Número de posts curtidos em comum
       }
     end
 

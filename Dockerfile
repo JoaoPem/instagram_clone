@@ -1,69 +1,81 @@
 # syntax = docker/dockerfile:1
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t my-app .
-# docker run -d -p 80:80 -p 443:443 --name my-app -e RAILS_MASTER_KEY=<value from config/master.key> my-app
-
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
+# Base image com versão configurável do Ruby
 ARG RUBY_VERSION=3.1.1
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
-# Rails app lives here
+# Diretório de trabalho da aplicação
 WORKDIR /rails
 
-# Install base packages
+# Instalar pacotes básicos necessários para runtime
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
+    apt-get install --no-install-recommends -y \
+    curl \
+    libjemalloc2 \
+    libvips \
+    sqlite3 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Set production environment
+# Configurações de ambiente para o Rails
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development"
 
-# Throw-away build stage to reduce size of final image
+# Estágio de build para reduzir o tamanho final da imagem
 FROM base AS build
 
-# Install packages needed to build gems
+# Instalar pacotes necessários para compilar gems e assets
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git pkg-config && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    pkg-config \
+    libsqlite3-dev && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install --no-install-recommends -y \
+    nodejs \
+    yarn && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install application gems
+# Copiar arquivos de dependência para o build
 COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
+
+# Atualizar sistema de gems e instalar gems necessárias
+RUN gem update --system && \
+    gem install bundler && \
+    bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Copy application code
+# Copiar o código da aplicação
 COPY . .
 
-# Precompile bootsnap code for faster boot times
+# Pré-compilar o código do Bootsnap para melhorar tempos de boot
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# Pré-compilar os assets de produção
+RUN SECRET_KEY_BASE_DUMMY=1 RAILS_ENV=production bundle exec rails assets:precompile || \
+    (cat log/production.log && exit 1)
 
-
-
-
-# Final stage for app image
+# Estágio final para criar a imagem de produção
 FROM base
 
-# Copy built artifacts: gems, application
+# Copiar os artefatos do build: gems e código da aplicação
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# Run and own only the runtime files as a non-root user for security
+# Criar e usar um usuário não-root para segurança
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp
 USER 1000:1000
 
-# Entrypoint prepares the database.
+# Script de entrada para preparar o banco de dados
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start the server by default, this can be overwritten at runtime
+# Expor a porta padrão do servidor Rails
 EXPOSE 3000
+
+# Comando padrão para iniciar o servidor
 CMD ["./bin/rails", "server"]

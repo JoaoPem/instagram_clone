@@ -11,46 +11,46 @@ class HomeController < ApplicationController
     @suggestions = suggest_followers(current_user)
   end
 
-  # Sugere seguidores com base na matriz de adjacência de forma recursiva
+  # Sugere conexões com base no peso das arestas
   def suggest_followers(user)
-    # Obtemos todos os usuários e a matriz de adjacência
     users = User.all
-    matrix = User.adjacency_matrix
 
-    # Encontramos o índice do usuário atual na lista de usuários
-    user_index = users.index(user)
-    return [] unless user_index # Retorna vazio se o usuário não estiver na lista
-
-    # Usuários que o current_user já segue
-    following_users = user.followings.to_set
-
-    # Inicia o processo recursivo para encontrar conexões
-    visited = Set.new([ user ]) # Para rastrear os usuários já visitados
-    suggestions = Set.new     # Para acumular as sugestões
-
-    # Explora as conexões recursivamente sem limite explícito
-    explore_connections(user_index, matrix, users, visited, suggestions)
-
-    # Filtragem final:
-    # Remove o próprio usuário e os que já são seguidos
-    filtered_suggestions = suggestions - following_users - [ user ]
-
-    # Retorna até 5 sugestões aleatórias
-    filtered_suggestions.to_a.sample(5)
-  end
-
-  # Método recursivo para explorar conexões de múltiplos graus
-  def explore_connections(current_index, matrix, users, visited, suggestions)
-    # Verifica conexões para o índice atual
-    matrix[current_index].each_with_index do |connection, index|
-      next if connection == 0 || visited.include?(users[index]) # Ignorar conexões inexistentes ou já visitadas
-
-      visited.add(users[index])      # Marca o usuário como visitado
-      suggestions.add(users[index])  # Adiciona às sugestões
-
-      # Chama recursivamente para explorar o próximo nível de conexões
-      explore_connections(index, matrix, users, visited, suggestions)
+    # Mapeia os posts curtidos por cada usuário
+    user_likes = {}
+    users.each do |other_user|
+      user_likes[other_user.id] = other_user.liked_posts.pluck(:id)
     end
+
+    # Calcula as conexões (arestas) com pesos
+    connections = {}
+    users.each do |user_x|
+      users.each do |user_y|
+        next if user_x == user_y # Evita auto-referência
+
+        # Calcula a interseção de posts curtidos
+        common_posts = user_likes[user_x.id] & user_likes[user_y.id]
+        next if common_posts.empty? # Ignora se não há posts em comum
+
+        # Adiciona o peso da conexão
+        connections[[ user_x.id, user_y.id ]] = common_posts.size
+      end
+    end
+
+    # Encontra as sugestões para o usuário atual
+    user_connections = connections.select do |(source, target), weight|
+      source == user.id || target == user.id
+    end
+
+    # Ordena as sugestões por peso (maior relevância primeiro)
+    sorted_suggestions = user_connections.sort_by { |_, weight| -weight }
+
+    # Extrai os IDs dos usuários sugeridos
+    suggested_user_ids = sorted_suggestions.map do |(source, target), _|
+      source == user.id ? target : source
+    end
+
+    # Retorna os usuários sugeridos
+    User.where(id: suggested_user_ids)
   end
 
   def set_feeds
