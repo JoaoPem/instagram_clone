@@ -11,25 +11,32 @@ class HomeController < ApplicationController
     @suggestions = suggest_followers(current_user)
   end
 
+  # Lista de Adjacência pois utilizamos Hash;
   # Sugere conexões com base no peso das arestas
   def suggest_followers(user)
     users = User.all
 
-    # Mapeia os posts curtidos por cada usuário
+    # Inicializa um Hash;
     user_likes = {}
+    # A variável "other_user" receberá cada usuário presente no banco;
     users.each do |other_user|
+      # Coletando os posts que o usuário x curtiu e adiciona ao hash;
       user_likes[other_user.id] = other_user.liked_posts.pluck(:id)
     end
 
-    # Calcula as conexões (arestas) com pesos
+    # Inicializa um Hash;
     connections = {}
+    # A variável "user_x" receberá cada usuário presente no banco;
     users.each do |user_x|
+      # A variável "user_y" receberá cada usuário presente no banco;
       users.each do |user_y|
-        next if user_x == user_y # Evita auto-referência
+        # compara se o usuário x e y são iguais evitando auto-referência
+        next if user_x == user_y
 
-        # Calcula a interseção de posts curtidos
+        # Armazena os posts que o usuário x e o usuário y curtiram em comum;
         common_posts = user_likes[user_x.id] & user_likes[user_y.id]
-        next if common_posts.empty? # Ignora se não há posts em comum
+        # Ignora se não há posts em comum
+        next if common_posts.empty?
 
         # Adiciona o peso da conexão
         connections[[ user_x.id, user_y.id ]] = common_posts.size
@@ -37,11 +44,13 @@ class HomeController < ApplicationController
     end
 
     # Encontra as sugestões para o usuário atual
+    # Criamos um novo Hash chamado "user_connections" que receberá um select no Hash de conexões
     user_connections = connections.select do |(source, target), weight|
+      # Buscando conexões que vão do usuário atual ou para o usuário atual;
       source == user.id || target == user.id
     end
 
-    # Ordena as sugestões por peso (maior relevância primeiro)
+    # Ordena as sugestões por peso (maior relevância primeiro "-weight")
     sorted_suggestions = user_connections.sort_by { |_, weight| -weight }
 
     # Extrai os IDs dos usuários sugeridos

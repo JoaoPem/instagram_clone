@@ -10,7 +10,7 @@ class GraphController < ApplicationController
       {
         id: user.id,
         name: user.full_name,
-        isCurrentUser: user == current_user # Identifica o current_user
+        isCurrentUser: user == current_user  # Identifica o current_user
       }
     end
 
